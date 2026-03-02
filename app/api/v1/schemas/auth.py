@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pydantic import EmailStr, BaseModel
 
 
-from app.api.v1.schemas.users import UserV1
+from app.api.v1.schemas.users import AccountV1
 
 
 class TokenStatus(str, Enum):
@@ -34,8 +34,8 @@ class TokenV1(BaseModel):
 class RefreshTokenV1(Document):
     token_id: UUID
     token: str
-    user: Link[UserV1]
-    status: TokenStatus = TokenStatus.VALID.value
+    user: Link[AccountV1]
+    status: TokenStatus = TokenStatus.VALID
     created_at: datetime = datetime.now(timezone.utc)
     expires_at: datetime
     used_at: Optional[datetime] = None
@@ -73,10 +73,10 @@ class RefreshTokenV1(Document):
 
 
 class EmailCodeV1(Document):
-    user: Link[UserV1]
+    user: Link[AccountV1]
     code: str
     mode: str
-    status: CodeStatus = CodeStatus.VALID.value
+    status: CodeStatus = CodeStatus.VALID
     created_at: datetime = datetime.now(timezone.utc)
 
     class Settings:
@@ -86,8 +86,8 @@ class EmailCodeV1(Document):
         # list of indexes
         indexes: list = [
             IndexModel(
-                [("user", pymongo.ASCENDING)],
-                name="email_codes_user_index"
+                [("code", pymongo.ASCENDING)],
+                name="email_codes_code_index"
             ),
             IndexModel(
                 [("created_at", pymongo.ASCENDING)],

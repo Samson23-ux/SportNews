@@ -5,9 +5,19 @@ from pymongo import IndexModel
 from pydantic import BaseModel
 
 
-class CompetitionType(str, Enum):
+class CompetitionTypeV1(str, Enum):
     LEAGUE: str = "league"
     EUROPE: str = "europe"
+    TOURNAMENT: str = "tournament"
+    CHAMPIONSHIP: str = "championship"
+
+
+class SportEnumv1(str, Enum):
+    FOOTBALL: str = "football"
+    BASKETBALL: str = "basketball"
+    TENNIS: str = "tennis"
+    GOLF: str = "golf"
+    BOXING: str = "boxing"
 
 
 class SportV1(Document):
@@ -51,18 +61,11 @@ class TeamV1(BaseModel):
     name: str
     country: str
 
-
-class PlayerV1(BaseModel):
-    name: str
-    age: int
-    nationality: str
-
-
 class CompetitionV1(BaseModel):
     name: str
-    type: CompetitionType
+    type: CompetitionTypeV1
 
-    
+
 class FootballV1(SportV1):
     teams: list[TeamV1]
     competitions: list[CompetitionV1]
@@ -74,15 +77,12 @@ class BasketballV1(SportV1):
 
 
 class TennisV1(SportV1):
-    players: list[PlayerV1]
     competitions: list[CompetitionV1]
 
 
 class BoxingV1(SportV1):
-    players: list[PlayerV1]
     competitions: list[CompetitionV1]
 
 
 class GolfV1(SportV1):
-    players: list[PlayerV1]
     competitions: list[CompetitionV1]

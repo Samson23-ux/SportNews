@@ -1,11 +1,17 @@
 import sentry_sdk
 from zoneinfo import ZoneInfo
-from fastapi import FastAPI, Request
 from datetime import datetime, timezone
 import sentry_sdk.logger as sentry_logger
+from fastapi import FastAPI, Request, Response
 
 
 from app.core.config import settings
+from app.api.v1.routers.auth import auth_router_v1
+from app.api.v1.routers.users import users_router_v1
+from app.api.v1.routers.admin import admin_router_v1
+from app.api.v1.routers.editors import editors_router_v1
+from app.api.v1.routers.authors import authors_router_v1
+from app.api.v1.routers.articles import articles_router_v1
 
 
 app = FastAPI(
@@ -25,6 +31,14 @@ sentry_sdk.init(
 )
 
 
+app.include_router(auth_router_v1, prefix=settings.API_PREFIX, tags=["Auth"])
+app.include_router(users_router_v1, prefix=settings.API_PREFIX, tags=["Users"])
+app.include_router(admin_router_v1, prefix=settings.API_PREFIX, tags=["Admin"])
+app.include_router(authors_router_v1, prefix=settings.API_PREFIX, tags=["Authors"])
+app.include_router(editors_router_v1, prefix=settings.API_PREFIX, tags=["Editors"])
+app.include_router(articles_router_v1, prefix=settings.API_PREFIX, tags=["Articles"])
+
+
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
     utc_dt: datetime = datetime.now(timezone.utc)
@@ -35,7 +49,7 @@ async def logging_middleware(request: Request, call_next):
 
     sentry_logger.info(log_msg)
 
-    response = await call_next(request)
+    response: Response = await call_next(request)
     response.headers["X-App-Name"] = "SportNews API"
 
     return response
