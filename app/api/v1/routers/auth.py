@@ -73,13 +73,12 @@ async def create_new_token(
 
 
 @auth_router_v1.patch(
-    "/auth/{user_id}/verify/{code}",
+    "/auth/verify/{code}",
     status_code=200,
     response_model=UserResponseV1,
     description="Verify user account",
 )
 async def verify_account(
-    user_id: PydanticObjectId,
     code: str,
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):

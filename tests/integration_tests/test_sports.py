@@ -6,7 +6,7 @@ from tests.fake_data import fake_user
 
 
 @pytest.mark.asyncio
-async def test_get_user_profile(async_client: AsyncClient, create_user: Response):
+async def test_get_all_sports(async_client: AsyncClient, create_user: Response):
     user_email: str = fake_user.email
     user_password: str = fake_user.password
 
@@ -18,20 +18,19 @@ async def test_get_user_profile(async_client: AsyncClient, create_user: Response
 
     access_token: str = sign_in_res.json()["access_token"]
 
-
     res = await async_client.get(
-        "/api/v1/users/me",
+        "/sports",
         headers={"Authorization": f"Bearer {access_token}", "curr_env": "testing"},
     )
 
     json_res = res.json()
 
     assert res.status_code == 200
-    assert user_email == json_res["data"]["email"]
+    assert len(json_res["data"]) >= 1
 
 
 @pytest.mark.asyncio
-async def test_get_user_profile_settings(async_client: AsyncClient, create_user: Response):
+async def test_get_sports_teams(async_client: AsyncClient, create_user: Response):
     user_email: str = fake_user.email
     user_password: str = fake_user.password
 
@@ -43,20 +42,19 @@ async def test_get_user_profile_settings(async_client: AsyncClient, create_user:
 
     access_token: str = sign_in_res.json()["access_token"]
 
-
     res = await async_client.get(
-        "/api/v1/users/me/settings",
+        "/sports/golf/teams",
         headers={"Authorization": f"Bearer {access_token}", "curr_env": "testing"},
     )
 
     json_res = res.json()
 
     assert res.status_code == 200
-    assert "theme" in json_res["data"]
+    assert len(json_res["data"]) >= 1
 
 
 @pytest.mark.asyncio
-async def test_update_user_profile_settings(async_client: AsyncClient, create_user: Response):
+async def test_get_sports_competition(async_client: AsyncClient, create_user: Response):
     user_email: str = fake_user.email
     user_password: str = fake_user.password
 
@@ -67,17 +65,13 @@ async def test_update_user_profile_settings(async_client: AsyncClient, create_us
     )
 
     access_token: str = sign_in_res.json()["access_token"]
-    settings_update: dict = {"theme": "dark"}
 
-
-    res = await async_client.patch(
-        "/api/v1/users/me/settings",
-        json=settings_update,
+    res = await async_client.get(
+        "/sports/golf/competitions",
         headers={"Authorization": f"Bearer {access_token}", "curr_env": "testing"},
     )
 
     json_res = res.json()
-    theme: str = settings_update.get("theme")
 
     assert res.status_code == 200
-    assert theme == json_res["data"]["theme"]
+    assert len(json_res["data"]) >= 1

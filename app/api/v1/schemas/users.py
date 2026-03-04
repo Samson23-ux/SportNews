@@ -81,11 +81,12 @@ class PasswordUpdateV1(BaseModel):
 
 # global profile settings
 class ProfileSettingsV1(BaseModel):
-    timezone: str
+    timezone: str = "utc"
     theme: Theme = Theme.WHITE
 
 
 class UserSettingsV1(ProfileSettingsV1):
+    favourite_teams: list[TeamV1] = []
     receive_infomation: bool = False
     receive_newsletter: bool = False
 
@@ -107,6 +108,7 @@ class SettingsUpdateV1(BaseModel):
 
 
 class UserSettingsUpdateV1(SettingsUpdateV1):
+    favourite_teams: Optional[list[TeamV1]] = None
     receive_infomation: Optional[bool] = None
     receive_newsletter: Optional[bool] = None
 
@@ -122,8 +124,7 @@ class WriterSettingsUpdateV1(EmployeeSettingsUpdateV1):
 # db data
 class AccountV1(Document):
     email: EmailStr
-    password: str = Field(min_length=8)
-    is_verified: bool
+    is_verified: bool = False
     created_at: datetime = datetime.now(timezone.utc)
 
     class Settings:
@@ -173,7 +174,15 @@ class AccountV1(Document):
         state_management_replace_objects: bool = True
 
 
-class EmployeeV1(AccountV1):
+class GoogleUserV1(AccountV1):
+    is_verified: bool = True
+
+
+class UserWithPasswordV1(AccountV1):
+    password: str = Field(min_length=8)
+
+
+class EmployeeV1(UserWithPasswordV1):
     name: str
     nationality: str
     profile_settings: EmployeeSettingsV1
@@ -194,7 +203,7 @@ class AdminV1(EmployeeV1):
 
 class EditorV1(EmployeeV1):
     role: UserRoleV1 = UserRoleV1.EDITOR
-    tasks: int
+    tasks: int = 0
     profile_settings: WriterSettingsV1
 
 
@@ -203,9 +212,8 @@ class AuthorV1(EmployeeV1):
     profile_settings: WriterSettingsV1
 
 
-class UserV1(AccountV1):
+class UserV1(UserWithPasswordV1):
     role: UserRoleV1 = UserRoleV1.USER
-    favourite_teams: list[TeamV1]
     profile_settings: UserSettingsV1
 
 

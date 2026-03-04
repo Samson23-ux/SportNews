@@ -7,8 +7,8 @@ from tests.fake_data import fake_author, fake_user
 
 @pytest.mark.asyncio
 async def test_get_author_articles(create_article: Response, async_client: AsyncClient):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -31,8 +31,8 @@ async def test_get_author_articles(create_article: Response, async_client: Async
 
 @pytest.mark.asyncio
 async def test_get_author_dashboard(create_article: Response, async_client: AsyncClient):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -56,8 +56,8 @@ async def test_get_author_dashboard(create_article: Response, async_client: Asyn
 
 @pytest.mark.asyncio
 async def test_get_author_profile(create_author: Response, async_client: AsyncClient):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -73,7 +73,7 @@ async def test_get_author_profile(create_author: Response, async_client: AsyncCl
     )
 
     json_res = res.json()
-    author_name: str = fake_author.get("name")
+    author_name: str = fake_author.name
 
     assert res.status_code == 200
     assert author_name == json_res["data"]["name"]
@@ -83,8 +83,8 @@ async def test_get_author_profile(create_author: Response, async_client: AsyncCl
 async def test_unauthorized_get_author_profile(
     create_author: Response, async_client: AsyncClient
 ):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -115,8 +115,8 @@ async def test_unauthenticated_get_author_profile(
 async def test_get_author_settings(
     async_client: AsyncClient, create_author: Response
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -141,8 +141,8 @@ async def test_get_author_settings(
 async def test_update_author_settings(
     async_client: AsyncClient, create_author: Response
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",

@@ -1,4 +1,5 @@
 from typing import Annotated
+from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, Request, Query
 from pymongo.asynchronous.client_session import AsyncClientSession
 
@@ -22,7 +23,7 @@ editors_router_v1 = APIRouter()
     "/editors/me/articles",
     status_code=200,
     response_model=ArticleResponseV1,
-    description="Get current editor edited articles"
+    description="Get current editor edited articles",
 )
 async def get_editor_articles(
     request: Request,
@@ -44,7 +45,7 @@ async def get_editor_articles(
     "/editors/me/analytics/dashboard",
     status_code=200,
     response_model=DashboardResponseV1,
-    description="Get current editor dashboard analytics"
+    description="Get current editor dashboard analytics",
 )
 async def get_editor_dashboard(
     request: Request,
@@ -62,9 +63,7 @@ async def get_editor_dashboard(
 )
 async def get_editor_profile(
     request: Request,
-    curr_user: Annotated[
-        AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))
-    ],
+    curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):
     pass
@@ -78,9 +77,22 @@ async def get_editor_profile(
 )
 async def get_editor_profile_settings(
     request: Request,
-    curr_user: Annotated[
-        AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))
-    ],
+    curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))],
+    session: Annotated[AsyncClientSession, Depends(get_session)],
+):
+    pass
+
+
+@editors_router_v1.patch(
+    "/editors/articles/{article_id}/edited",
+    status_code=200,
+    response_model=ArticleResponseV1,
+    description="Mark article edited. Editors can only mark assigned articles edited",
+)
+async def mark_article_edited(
+    article_id: PydanticObjectId,
+    request: Request,
+    curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):
     pass
@@ -95,9 +107,7 @@ async def get_editor_profile_settings(
 async def update_editor_profile_settings(
     request: Request,
     settings_update: WriterSettingsUpdateV1,
-    curr_user: Annotated[
-        AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))
-    ],
+    curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.EDITOR]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):
     pass

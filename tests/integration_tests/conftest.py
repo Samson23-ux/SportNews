@@ -1,13 +1,14 @@
 import pytest_asyncio
+from typing import Any
 from beanie import Document
 from beanie import init_beanie
 from pymongo import AsyncMongoClient
+from collections.abc import AsyncGenerator
 from httpx import AsyncClient, ASGITransport, Response
 from pymongo.asynchronous.client_session import AsyncClientSession
 
 
 from app.main import app
-from app.database import client
 from app.core.config import settings
 from app.dependencies import get_session
 from app.api.v1.schemas.tasks import TaskV1
@@ -59,8 +60,17 @@ from app.api.v1.schemas.sports import (
 
 @pytest_asyncio.fixture(scope="session")
 async def initialize_db():
+    client = AsyncMongoClient(
+        settings.MONGO_DB_URI,
+        tz_aware=True,
+        maxConnecting=5,
+        appname=settings.API_TITLE,
+        tls=settings.ENVIRONMENT == "production",
+    )
+
     db_name: str = settings.DB_NAME
     db = client[db_name]
+
     models: list[Document] = [
         UserV1,
         GolfV1,
@@ -94,7 +104,9 @@ async def initialize_db():
 
 
 @pytest_asyncio.fixture
-async def get_test_session(initialize_db: AsyncMongoClient):
+async def get_test_session(
+    initialize_db: AsyncMongoClient,
+) -> AsyncGenerator[AsyncClientSession, Any, None]:
     session: AsyncClientSession = initialize_db.start_session(causal_consistency=True)
     await session.start_transaction()
 
@@ -105,7 +117,9 @@ async def get_test_session(initialize_db: AsyncMongoClient):
 
 
 @pytest_asyncio.fixture
-async def async_client(get_test_session: AsyncClientSession):
+async def async_client(
+    get_test_session: AsyncClientSession,
+) -> AsyncGenerator[AsyncClientSession, Any, None]:
     async def get_db_session():
         yield get_test_session
 
@@ -119,10 +133,10 @@ async def async_client(get_test_session: AsyncClientSession):
 
 @pytest_asyncio.fixture
 async def create_admin_user():
-    admin_email: str = fake_admin.get("email")
-    admin_password: str = fake_admin.get("password")
-    admin_name: str = fake_admin.get("name")
-    admin_nationality: str = fake_admin.get("nationality")
+    admin_email: str = fake_admin.email
+    admin_password: str = fake_admin.password
+    admin_name: str = fake_admin.name
+    admin_nationality: str = fake_admin.nationality
 
     sign_up_data: AdminCreateV1 = AdminCreateV1(
         email=admin_email,
@@ -150,11 +164,16 @@ async def create_sports():
 
 
 @pytest_asyncio.fixture
-async def create_user(create_admin_user, create_sports, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+async def create_user(
+    create_admin_user, create_sports, async_client: AsyncClient
+) -> Response:
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
-    user_create: UserCreateV1 = UserCreateV1(email=user_email, password=user_password)
+    user_create: UserCreateV1 = UserCreateV1(
+        email=user_email,
+        password=user_password,
+    )
 
     res = await async_client.post(
         "/api/v1/auth/sign-up", json=user_create, headers={"curr_env": "testing"}
@@ -164,17 +183,20 @@ async def create_user(create_admin_user, create_sports, async_client: AsyncClien
 
 
 @pytest_asyncio.fixture
-async def create_author(create_admin_user, create_sports, async_client: AsyncClient):
-    admin_email: str = fake_admin.get("email")
-    admin_password: str = fake_admin.get("password")
+async def create_author(
+    create_admin_user, async_client: AsyncClient
+) -> Response:
+    admin_email: str = fake_admin.email
+    admin_password: str = fake_admin.password
 
-    author_name: str = fake_author.get("name")
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
-    author_nationality: str = fake_author.get("nationality")
+    author_name: str = fake_author.name
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
+    author_nationality: str = fake_author.nationality
 
     sign_up_data: UserCreateV1 = UserCreateV1(
-        email=author_email, password=author_password
+        email=author_email,
+        password=author_password,
     )
 
     await async_client.post(
@@ -205,17 +227,20 @@ async def create_author(create_admin_user, create_sports, async_client: AsyncCli
 
 
 @pytest_asyncio.fixture
-async def create_editor(create_admin_user, create_sports, async_client: AsyncClient):
-    admin_email: str = fake_admin.get("email")
-    admin_password: str = fake_admin.get("password")
+async def create_editor(
+    create_admin_user, async_client: AsyncClient
+) -> Response:
+    admin_email: str = fake_admin.email
+    admin_password: str = fake_admin.password
 
-    editor_name: str = fake_editor.get("name")
-    editor_email: str = fake_editor.get("email")
-    editor_password: str = fake_editor.get("password")
-    editor_nationality: str = fake_editor.get("nationality")
+    editor_name: str = fake_editor.name
+    editor_email: str = fake_editor.email
+    editor_password: str = fake_editor.password
+    editor_nationality: str = fake_editor.nationality
 
     sign_up_data: UserCreateV1 = UserCreateV1(
-        email=editor_email, password=editor_password
+        email=editor_email,
+        password=editor_password,
     )
 
     await async_client.post(
@@ -246,9 +271,11 @@ async def create_editor(create_admin_user, create_sports, async_client: AsyncCli
 
 
 @pytest_asyncio.fixture
-async def create_article(create_author, create_sports, async_client: AsyncClient):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+async def create_article(
+    create_author, async_client: AsyncClient
+) -> Response:
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -258,12 +285,12 @@ async def create_article(create_author, create_sports, async_client: AsyncClient
 
     access_token: str = sign_in_res.json()["access_token"]
 
-    title: str = fake_article.get("title")
-    content: str = fake_article.get("content")
-    author: str = fake_article.get("author")
-    sport: str = fake_article.get("sport")
-    category: str = fake_article.get("category")
-    athletes: list[str] = fake_article.get("athletes")
+    title: str = fake_article.title
+    content: str = fake_article.content
+    author: str = fake_article.author.name
+    sport: str = fake_article.sport.name
+    category: str = fake_article.category
+    teams: list[str] = [fake_article.teams[0].name]
 
     article_create: ArticleCreateV1 = ArticleCreateV1(
         title=title,
@@ -271,7 +298,7 @@ async def create_article(create_author, create_sports, async_client: AsyncClient
         author=author,
         sport=sport,
         category=category,
-        athletes=athletes,
+        teams=teams,
     )
 
     res = await async_client.post(

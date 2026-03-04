@@ -16,8 +16,8 @@ from app.api.v1.schemas.articles import ImageOutV1
 
 @pytest.mark.asyncio
 async def test_get_articles(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -42,8 +42,8 @@ async def test_get_articles(create_article: Response, async_client: AsyncClient)
 async def test_get_drafts(
     create_author: Response, async_client: AsyncClient
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -53,7 +53,7 @@ async def test_get_drafts(
 
     access_token: str = sign_in_res.json()["access_token"]
 
-    title: str = fake_article.get("title")
+    title: str = fake_article.title
     draft_data: dict = {"title": title}
 
     await async_client.post(
@@ -75,8 +75,8 @@ async def test_get_drafts(
 
 @pytest.mark.asyncio
 async def test_articles_not_found(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -96,12 +96,12 @@ async def test_articles_not_found(create_article: Response, async_client: AsyncC
 
 @pytest.mark.asyncio
 async def test_get_article(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
-    article_title: str = fake_article.get("title")
+    article_title: str = fake_article.title
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -126,8 +126,8 @@ async def test_get_article(create_article: Response, async_client: AsyncClient):
 async def test_get_draft(
     create_author: Response, async_client: AsyncClient
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -137,7 +137,7 @@ async def test_get_draft(
 
     access_token: str = sign_in_res.json()["access_token"]
 
-    title: str = fake_article.get("title")
+    title: str = fake_article.title
     draft_data: dict = {"title": title}
 
     draft_res = await async_client.post(
@@ -161,8 +161,8 @@ async def test_get_draft(
 
 @pytest.mark.asyncio
 async def test_get_article_images(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -186,7 +186,7 @@ async def test_get_article_images(create_article: Response, async_client: AsyncC
 @pytest.mark.asyncio
 async def test_create_article(create_article: Response, async_client: AsyncClient):
     json_res: Response = create_article.json()
-    article_title: str = fake_article.get("title")
+    article_title: str = fake_article.title
 
     assert create_article.status_code == 201
     assert "id" in json_res["data"]
@@ -197,8 +197,8 @@ async def test_create_article(create_article: Response, async_client: AsyncClien
 async def test_create_article_draft(
     create_author: Response, async_client: AsyncClient
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -208,7 +208,7 @@ async def test_create_article_draft(
 
     access_token: str = sign_in_res.json()["access_token"]
 
-    title: str = fake_article.get("title")
+    title: str = fake_article.title
     draft_data: dict = {"title": title}
 
     res = await async_client.post(
@@ -224,8 +224,8 @@ async def test_create_article_draft(
 
 @pytest.mark.asyncio
 async def test_create_rating(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -249,8 +249,8 @@ async def test_create_rating(create_article: Response, async_client: AsyncClient
 
 @pytest.mark.asyncio
 async def test_upload_images(create_article: Response, async_client: AsyncClient):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -287,8 +287,8 @@ async def test_upload_images(create_article: Response, async_client: AsyncClient
 
 @pytest.mark.asyncio
 async def test_update_article(create_article: Response, async_client: AsyncClient):
-    editor_email: str = fake_editor.get("email")
-    editor_password: str = fake_editor.get("password")
+    editor_email: str = fake_editor.email
+    editor_password: str = fake_editor.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -309,7 +309,7 @@ async def test_update_article(create_article: Response, async_client: AsyncClien
     )
 
     json_res = res.json()
-    new_article_title: str = article_update.get("title")
+    new_article_title: str = article_update.title
 
     assert res.status_code == 200
     assert new_article_title == json_res["data"]["title"]
@@ -319,8 +319,8 @@ async def test_update_article(create_article: Response, async_client: AsyncClien
 async def test_update_draft(
     create_author: Response, async_client: AsyncClient
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -330,7 +330,7 @@ async def test_update_draft(
 
     access_token: str = sign_in_res.json()["access_token"]
 
-    title: str = fake_article.get("title")
+    title: str = fake_article.title
     draft_data: dict = {"title": title}
     draft_update: dict = {"title": "new_fake_title"}
 
@@ -357,8 +357,8 @@ async def test_update_draft(
 
 @pytest.mark.asyncio
 async def test_update_rating(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -400,8 +400,8 @@ async def test_unauthorized_article_update(
 
 @pytest.mark.asyncio
 async def test_delete_article(create_article: Response, async_client: AsyncClient):
-    admin_email: str = fake_admin.get("email")
-    admin_password: str = fake_admin.get("password")
+    admin_email: str = fake_admin.email
+    admin_password: str = fake_admin.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -426,8 +426,8 @@ async def test_delete_article(create_article: Response, async_client: AsyncClien
 async def test_delete_draft(
     create_author: Response, async_client: AsyncClient
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
@@ -437,7 +437,7 @@ async def test_delete_draft(
 
     access_token: str = sign_in_res.json()["access_token"]
 
-    title: str = fake_article.get("title")
+    title: str = fake_article.title
     draft_data: dict = {"title": title}
 
 
@@ -461,8 +461,8 @@ async def test_delete_draft(
 async def test_unauthorized_article_delete(
     create_article: Response, async_client: AsyncClient
 ):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -485,8 +485,8 @@ async def test_unauthorized_article_delete(
 
 @pytest.mark.asyncio
 async def test_delete_rating(create_article: Response, async_client: AsyncClient):
-    user_email: str = fake_user.get("email")
-    user_password: str = fake_user.get("password")
+    user_email: str = fake_user.email
+    user_password: str = fake_user.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]
@@ -517,8 +517,8 @@ async def test_delete_rating(create_article: Response, async_client: AsyncClient
 
 @pytest.mark.asyncio
 async def test_delete_images(create_article: Response, async_client: AsyncClient):
-    author_email: str = fake_author.get("email")
-    author_password: str = fake_author.get("password")
+    author_email: str = fake_author.email
+    author_password: str = fake_author.password
 
     article_json_res = create_article.json()
     article_id: str = article_json_res["data"]["id"]

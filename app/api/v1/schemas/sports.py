@@ -61,6 +61,7 @@ class TeamV1(BaseModel):
     name: str
     country: str
 
+
 class CompetitionV1(BaseModel):
     name: str
     type: CompetitionTypeV1
@@ -86,3 +87,33 @@ class BoxingV1(SportV1):
 
 class GolfV1(SportV1):
     competitions: list[CompetitionV1]
+
+
+class BaseResponseV1(BaseModel):
+    message: str
+
+
+class SportOutV1(BaseModel):
+    name: str
+
+
+class TeamOutV1(BaseModel):
+    name: str
+    country: str
+
+
+class CompetitionOvtV1(BaseModel):
+    name: str
+    type: CompetitionTypeV1
+
+
+class SportResponseV1(BaseResponseV1):
+    data: SportOutV1 | list[SportOutV1]
+
+
+class TeamResponseV1(BaseResponseV1):
+    data: TeamOutV1 | list[TeamOutV1]
+
+
+class CompetitionResponseV1(BaseResponseV1):
+    data: CompetitionOvtV1 | list[CompetitionOvtV1]

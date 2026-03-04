@@ -20,6 +20,7 @@ class ArticleCategoryV1(str, Enum):
 class ArticleStatusV1(str, Enum):
     PENDING: str = "pending"
     REVIEWING: str = "reviewing"
+    EDITED: str = "edited"
     PUBLISHED: str = "published"
 
 
@@ -41,7 +42,7 @@ class ArticleV1(Document):
     content: str = Field(min_length=200)
     sport: Link[SportV1]
     author: Link[AuthorV1]
-    editor: Link[EditorV1]
+    editor: Link[EditorV1] = None
     readers: list[ArticleStatV1] = []
     status: ArticleStatusV1 = ArticleStatusV1.PENDING
     images: list[ArticleImageV1] = []
@@ -85,10 +86,12 @@ class ArticleDraftV1(Document):
     draft_id: PydanticObjectId
     title: Optional[str] = Field(default=None, min_length=15)
     content: Optional[str] = Field(default=None, min_length=200)
+    category: Optional[ArticleCategoryV1] = None
     sport: Optional[Link[SportV1]] = None
     author: Optional[Link[AuthorV1]] = None
     editor: Optional[Link[EditorV1]] = None
     athletes: Optional[list[str]] = None
+    teams: Optional[list[str]] = None
     status: str = "draft"
     images: Optional[list[ArticleImageV1]] = None
     created_at: Optional[datetime] = None
@@ -145,7 +148,14 @@ class ArticleCreateV1(BaseModel):
     author: str
     sport: SportEnumv1
     category: ArticleCategoryV1 = ArticleCategoryV1.NEWS
-    athletes: list[str] = Field(description="A list of athletes the article is about")
+    athletes: Optional[list[str]] = Field(
+        default=None,
+        description="A list of athletes (for individual sport) the article is about",
+    )
+    teams: Optional[list[str]] = Field(
+        default=None,
+        description="A list of teams (for team sport) the article is about",
+    )
     images: Optional[list[str]] = None
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -161,7 +171,12 @@ class ArticleUpdateV1(BaseModel):
         description="Category of article. News or Transfers",
     )
     athletes: Optional[list[str]] = Field(
-        default=None, description="A list of athletes the article is about"
+        default=None,
+        description="A list of athletes (for individual sport) the article is about",
+    )
+    teams: Optional[list[str]] = Field(
+        default=None,
+        description="A list of teams (for teams sport) the article is about",
     )
     images: Optional[list[str]] = None
 
@@ -178,7 +193,12 @@ class ArticleDraftCreateV1(BaseModel):
         description="Category of article. News or Transfers",
     )
     athletes: Optional[list[str]] = Field(
-        default=None, description="A list of athletes the article is about"
+        default=None,
+        description="A list of athletes (for individual sport) the article is about",
+    )
+    teams: Optional[list[str]] = Field(
+        default=None,
+        description="A list of teams (for teams sport) the article is about",
     )
     images: Optional[list[str]] = None
 
@@ -201,10 +221,7 @@ class SubscriptionV1(Document):
 
         # list of indexes
         indexes: list = [
-            IndexModel(
-                [("user", pymongo.ASCENDING)],
-                name="subscriptions_user_index"
-            ),
+            IndexModel([("user", pymongo.ASCENDING)], name="subscriptions_user_index"),
         ]
 
         """

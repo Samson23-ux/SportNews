@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.api.v1.routers.auth import auth_router_v1
 from app.api.v1.routers.users import users_router_v1
 from app.api.v1.routers.admin import admin_router_v1
+from app.api.v1.routers.sports import sports_router_v1
 from app.api.v1.routers.editors import editors_router_v1
 from app.api.v1.routers.authors import authors_router_v1
 from app.api.v1.routers.articles import articles_router_v1
@@ -34,6 +35,7 @@ sentry_sdk.init(
 app.include_router(auth_router_v1, prefix=settings.API_PREFIX, tags=["Auth"])
 app.include_router(users_router_v1, prefix=settings.API_PREFIX, tags=["Users"])
 app.include_router(admin_router_v1, prefix=settings.API_PREFIX, tags=["Admin"])
+app.include_router(sports_router_v1, prefix=settings.API_PREFIX, tags=["Sports"])
 app.include_router(authors_router_v1, prefix=settings.API_PREFIX, tags=["Authors"])
 app.include_router(editors_router_v1, prefix=settings.API_PREFIX, tags=["Editors"])
 app.include_router(articles_router_v1, prefix=settings.API_PREFIX, tags=["Articles"])
