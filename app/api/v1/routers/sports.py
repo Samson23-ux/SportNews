@@ -23,10 +23,6 @@ sports_router_v1 = APIRouter()
 )
 async def get_all_sports(
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit sports to view at once")
-    ],
     curr_user: Annotated[AccountV1, Depends(get_current_user)],
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):
@@ -58,7 +54,7 @@ async def get_sports_teams(
     response_model=CompetitionResponseV1,
     description="Get sport competitions",
 )
-async def get_sports_competition(
+async def get_sport_competitions(
     sport_name: str,
     request: Request,
     cursor: Annotated[str, Query(default=None, description="")],

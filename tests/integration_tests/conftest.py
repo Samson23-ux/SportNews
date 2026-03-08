@@ -1,9 +1,9 @@
 import pytest_asyncio
 from typing import Any
 from beanie import Document
-from beanie import init_beanie
 from pymongo import AsyncMongoClient
 from collections.abc import AsyncGenerator
+from beanie import init_beanie, PydanticObjectId
 from httpx import AsyncClient, ASGITransport, Response
 from pymongo.asynchronous.client_session import AsyncClientSession
 
@@ -183,9 +183,7 @@ async def create_user(
 
 
 @pytest_asyncio.fixture
-async def create_author(
-    create_admin_user, async_client: AsyncClient
-) -> Response:
+async def create_author(create_admin_user, async_client: AsyncClient) -> Response:
     admin_email: str = fake_admin.email
     admin_password: str = fake_admin.password
 
@@ -199,14 +197,17 @@ async def create_author(
         password=author_password,
     )
 
-    await async_client.post(
+    sign_up_res = await async_client.post(
         "/api/v1/auth/sign-up",
         json=sign_up_data,
         headers={"curr_env": "testing"},
     )
 
+    sign_up_json = sign_up_res.json()
+    author_id: PydanticObjectId = sign_up_json["data"]["id"]
+
     author_create: AuthorCreateV1 = AuthorCreateV1(
-        name=author_name, nationality=author_nationality
+        name=author_name, nationality=author_nationality, user_id=author_id
     )
 
     sign_in_res: Response = await async_client.post(
@@ -227,9 +228,7 @@ async def create_author(
 
 
 @pytest_asyncio.fixture
-async def create_editor(
-    create_admin_user, async_client: AsyncClient
-) -> Response:
+async def create_editor(create_admin_user, async_client: AsyncClient) -> Response:
     admin_email: str = fake_admin.email
     admin_password: str = fake_admin.password
 
@@ -243,14 +242,17 @@ async def create_editor(
         password=editor_password,
     )
 
-    await async_client.post(
+    sign_up_res = await async_client.post(
         "/api/v1/auth/sign-up",
         json=sign_up_data,
         headers={"curr_env": "testing"},
     )
 
+    sign_up_json = sign_up_res.json()
+    editor_id: PydanticObjectId = sign_up_json["data"]["id"]
+
     editor_create: EditorCreateV1 = EditorCreateV1(
-        name=editor_name, nationality=editor_nationality
+        name=editor_name, nationality=editor_nationality, user_id=editor_id
     )
 
     sign_in_res: Response = await async_client.post(
@@ -271,9 +273,7 @@ async def create_editor(
 
 
 @pytest_asyncio.fixture
-async def create_article(
-    create_author, async_client: AsyncClient
-) -> Response:
+async def create_article(create_author, async_client: AsyncClient) -> Response:
     author_email: str = fake_author.email
     author_password: str = fake_author.password
 

@@ -18,7 +18,6 @@ async def test_get_user_profile(async_client: AsyncClient, create_user: Response
 
     access_token: str = sign_in_res.json()["access_token"]
 
-
     res = await async_client.get(
         "/api/v1/users/me",
         headers={"Authorization": f"Bearer {access_token}", "curr_env": "testing"},
@@ -42,7 +41,6 @@ async def test_get_user_profile_settings(async_client: AsyncClient, create_user:
     )
 
     access_token: str = sign_in_res.json()["access_token"]
-
 
     res = await async_client.get(
         "/api/v1/users/me/settings",
@@ -68,7 +66,6 @@ async def test_update_user_profile_settings(async_client: AsyncClient, create_us
 
     access_token: str = sign_in_res.json()["access_token"]
     settings_update: dict = {"theme": "dark"}
-
 
     res = await async_client.patch(
         "/api/v1/users/me/settings",

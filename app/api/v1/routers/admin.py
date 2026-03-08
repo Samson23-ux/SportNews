@@ -210,7 +210,7 @@ async def assign_article(
     "/admin/authors",
     status_code=201,
     response_model=WriterResponseV1,
-    description="Create an author",
+    description="Assign author role",
 )
 async def create_author(
     request: Request,
@@ -225,7 +225,7 @@ async def create_author(
     "/admin/editors",
     status_code=201,
     response_model=WriterResponseV1,
-    description="Create an editor",
+    description="Assign editor role",
 )
 async def create_editor(
     request: Request,
@@ -297,7 +297,7 @@ async def update_admin_profile_settings(
 @admin_router_v1.delete(
     "/admin/authors/{author_id}",
     status_code=204,
-    description="Delete an author",
+    description="Remove author role",
 )
 async def delete_author(
     request: Request,
@@ -311,7 +311,7 @@ async def delete_author(
 @admin_router_v1.delete(
     "/admin/editors/{editor_id}",
     status_code=204,
-    description="Delete an editor",
+    description="Remove editor role",
 )
 async def delete_editor(
     request: Request,

@@ -7,6 +7,7 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 from tests.fake_data import fake_user
 from tests.unit_tests.conftest import base_path
 from app.api.v1.services.user_service import user_service_v1
+from app.core.exceptions import AuthenticationError, UserNotFoundError
 from app.api.v1.schemas.users import UserCreateV1, UserSettingsUpdateV1, UserV1
 
 
@@ -31,7 +32,9 @@ async def test_get_user_profile(
     curr_user: UserV1 = fake_user
     refresh_token: str = "fake-refresh-token"
 
-    profile = await user_service_v1.get_user_profile(curr_user, refresh_token, get_session)
+    profile = await user_service_v1.get_user_profile(
+        curr_user, refresh_token, get_session
+    )
 
     assert profile
     verify_token.assert_awaited_once()
@@ -91,6 +94,21 @@ async def test_get_user_by_id(
 
 
 @pytest.mark.asyncio
+async def test_user_not_found(
+    verify_token: AsyncMock,
+    get_session: AsyncClientSession,
+):
+    user_id: PydanticObjectId = PydanticObjectId()
+    refresh_token: str = "fake-refresh-token"
+
+    with pytest.raises(UserNotFoundError) as exc:
+        await user_service_v1.get_user_by_id(user_id, get_session, refresh_token)
+
+    assert "User not found" == str(exc.value)
+    verify_token.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_update_user(
     verify_token: AsyncMock,
     get_session: AsyncClientSession,
@@ -104,6 +122,19 @@ async def test_update_user(
 
     verify_token.assert_awaited_once()
     user_update.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_update_unauthenticated_user(
+    get_session: AsyncClientSession,
+):
+    user: UserV1 = fake_user
+    refresh_token: str = "fake-refresh-token"
+
+    with pytest.raises(AuthenticationError) as exc:
+        await user_service_v1.update_user(user, get_session, refresh_token)
+
+    assert "User not authenticated" == str(exc.value)
 
 
 @pytest.mark.asyncio

@@ -173,7 +173,9 @@ async def upload_images(
     request: Request,
     article_id: PydanticObjectId,
     article_images: Annotated[list[UploadFile], File()],
-    curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.AUTHOR]))],
+    curr_user: Annotated[
+        AccountV1, Depends(required_roles([UserRoleV1.AUTHOR, UserRoleV1.EDITOR]))
+    ],
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):
     pass

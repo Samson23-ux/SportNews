@@ -12,15 +12,15 @@ from app.api.v1.schemas.sports import TeamV1
 
 
 class UserRoleV1(str, Enum):
-    USER: str = "user"
-    ADMIN: str = "admin"
-    AUTHOR: str = "author"
-    EDITOR: str = "editor"
+    USER = "user"
+    ADMIN = "admin"
+    AUTHOR = "author"
+    EDITOR = "editor"
 
 
 class Theme(str, Enum):
-    DARK: str = "dark"
-    WHITE: str = "white"
+    DARK = "dark"
+    WHITE = "white"
 
 
 class UserCreateV1(BaseModel):
@@ -34,22 +34,25 @@ class UserCreateV1(BaseModel):
     @classmethod
     def email_to_lower(cls, v: EmailStr):
         return v.lower()
-    
 
-class EmployeeCreateV1(UserCreateV1):
+
+# base class for author and editor creation
+class WriterCreateV1(BaseModel):
+    name: str
+    nationality: str
+    user_id: PydanticObjectId
+
+
+class AdminCreateV1(UserCreateV1):
     name: str
     nationality: str
 
 
-class AdminCreateV1(EmployeeCreateV1):
+class EditorCreateV1(WriterCreateV1):
     pass
 
 
-class EditorCreateV1(EmployeeCreateV1):
-    pass
-
-
-class AuthorCreateV1(EmployeeCreateV1):
+class AuthorCreateV1(WriterCreateV1):
     pass
 
 
@@ -87,6 +90,7 @@ class ProfileSettingsV1(BaseModel):
 
 class UserSettingsV1(ProfileSettingsV1):
     favourite_teams: list[TeamV1] = []
+    subscribe: bool = False
     receive_infomation: bool = False
     receive_newsletter: bool = False
 
@@ -109,6 +113,7 @@ class SettingsUpdateV1(BaseModel):
 
 class UserSettingsUpdateV1(SettingsUpdateV1):
     favourite_teams: Optional[list[TeamV1]] = None
+    subscribe: Optional[bool] = None
     receive_infomation: Optional[bool] = None
     receive_newsletter: Optional[bool] = None
 
@@ -253,8 +258,13 @@ class AdminDashboardV1(EmployeeDashboardV1):
     total_users: int
     total_authors: int
     total_editors: int
-    readers_who_rate: int
     total_article_readers: dict[str, int]
+
+    """total_article_readers example -> {
+        total_readers: int,
+        readers_who_rate: int,
+        readers_who_dont_rate: int
+    }"""
 
 
 class WriterDashboardV1(EmployeeDashboardV1):

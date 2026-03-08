@@ -8,6 +8,7 @@ from tests.unit_tests.conftest import base_path
 from app.api.v1.services.editor_service import editor_service_v1
 from tests.fake_data import fake_editor, fake_article, fake_dashboard
 from app.api.v1.schemas.users import WriterSettingsUpdateV1, EditorV1
+from app.core.exceptions import AuthenticationError, ArticlesNotFoundError
 
 
 @pytest.mark.asyncio
@@ -20,10 +21,32 @@ async def test_get_editor_articles(
     path: str = f"{base_path}.editor_service.get_articles_from_db"
     with patch(path, new_callable=AsyncMock) as articles:
         articles.return_value = [fake_article]
-        await editor_service_v1.get_articles(editor, refresh_token, get_session)
+        await editor_service_v1.get_editor_articles(editor, refresh_token, get_session)
 
     verify_token.assert_awaited_once()
     articles.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_editor_articles_not_found(
+    verify_token: AsyncMock, get_session: AsyncClientSession
+):
+    editor: EditorV1 = fake_editor
+    refresh_token: str = "fake-refresh-token"
+
+    path: str = f"{base_path}.editor_service.get_articles_from_db"
+
+    editor_articles = patch(path, new_callable=AsyncMock).start()
+    editor_articles.return_value = []
+
+    with pytest.raises(ArticlesNotFoundError) as exc:
+        await editor_service_v1.get_editor_articles(editor, refresh_token, get_session)
+
+    editor_articles.stop()
+
+    assert "Articles not found" == str(exc.value)
+    verify_token.assert_awaited_once()
+    editor_articles.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -36,7 +59,7 @@ async def test_get_editor_dashboard(
     path: str = f"{base_path}.editor_service.get_dashboard_from_db"
     with patch(path, new_callable=AsyncMock) as dashboard:
         dashboard.return_value = fake_dashboard
-        await editor_service_v1.get_dashboard(editor, refresh_token, get_session)
+        await editor_service_v1.get_editor_dashboard(editor, refresh_token, get_session)
 
     verify_token.assert_awaited_once()
     dashboard.assert_awaited_once()
@@ -54,6 +77,17 @@ async def test_get_editor_profile(
     )
 
     assert profile
+
+
+@pytest.mark.asyncio
+async def test_get_unauthenticated_editor_profile(get_session: AsyncClientSession):
+    editor: EditorV1 = fake_editor
+    refresh_token: str = "fake-refresh-token"
+
+    with pytest.raises(AuthenticationError) as exc:
+        await editor_service_v1.get_editor_profile(editor, refresh_token, get_session)
+
+    assert "User not authenticated" == str(exc.value)
 
 
 @pytest.mark.asyncio
@@ -82,23 +116,23 @@ async def test_mark_article_edited(
     article_path: str = f"{base_path}.article_service.get_article_by_id"
     update_path: str = f"{base_path}.article_service.update_article_in_db"
 
-    article_db = patch(article_path, new_callable=AsyncMock).start()
-    article_update = patch(update_path, new_callable=AsyncMock).start()
+    article_db_patch: AsyncMock = patch(article_path, new_callable=AsyncMock).start()
+    article_update_patch: AsyncMock = patch(update_path, new_callable=AsyncMock).start()
 
-    article_db.return_value = fake_article
+    article_db_patch.return_value = fake_article
 
     article = await editor_service_v1.mark_article_edited(
         editor, refresh_token, article_id, get_session
     )
 
-    article_db.stop()
-    article_update.stop()
+    article_db_patch.stop()
+    article_update_patch.stop()
 
     assert article
 
     verify_token.assert_awaited_once()
-    article_db.assert_awaited_once()
-    article_update.assert_awaited_once()
+    article_db_patch.assert_awaited_once()
+    article_update_patch.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -114,7 +148,7 @@ async def test_update_editor_profile_settings(
 
     path: str = f"{base_path}.editor_service.update_editor_in_db"
     with patch(path, new_callable=AsyncMock) as settings:
-        profile_settings = await editor_service_v1.update_user_profile_settings(
+        profile_settings = await editor_service_v1.update_editor_profile_settings(
             editor, refresh_token, settings_update, get_session
         )
 

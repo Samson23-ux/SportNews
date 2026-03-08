@@ -6,6 +6,7 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 
 from tests.unit_tests.conftest import base_path
 from tests.fake_data import fake_user, FakeToken
+from app.core.exceptions import AuthenticationError
 from app.api.v1.schemas.users import UserCreateV1, UserV1
 from app.api.v1.services.auth_service import auth_service_v1
 
@@ -44,22 +45,22 @@ async def test_create_user(
     code_path: str = f"{base_path}.auth_service.add_code_to_db"
     email_path: str = f"{base_path}.auth_service.send_email_code"
 
-    create_user = patch(user_path, new_callable=AsyncMock).start()
-    code_db = patch(code_path, new_callable=AsyncMock).start()
-    code = patch(email_path, new_callable=AsyncMock).start()
+    create_user_patch: AsyncMock = patch(user_path, new_callable=AsyncMock).start()
+    code_db_patch: AsyncMock = patch(code_path, new_callable=AsyncMock).start()
+    code_patch: AsyncMock = patch(email_path, new_callable=AsyncMock).start()
 
     user = await auth_service_v1.create_user(user_create, get_session)
 
-    create_user.stop()
-    code_db.stop()
-    code.stop()
+    create_user_patch.stop()
+    code_db_patch.stop()
+    code_patch.stop()
 
     assert user
 
     get_user_by_email.assert_awaited_once()
-    create_user.assert_awaited_once()
-    code_db.assert_awaited_once()
-    code.assert_called_once()
+    create_user_patch.assert_awaited_once()
+    code_db_patch.assert_awaited_once()
+    code_patch.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -88,18 +89,18 @@ async def test_resend_email_code(
     code_path: str = f"{base_path}.auth_service.add_code_to_db"
     email_path: str = f"{base_path}.auth_service.send_email_code"
 
-    code_db = patch(code_path, new_callable=AsyncMock).start()
-    code = patch(email_path, new_callable=AsyncMock).start()
+    code_db_patch: AsyncMock = patch(code_path, new_callable=AsyncMock).start()
+    code_patch: AsyncMock = patch(email_path, new_callable=AsyncMock).start()
 
     user_id: PydanticObjectId = PydanticObjectId()
     await auth_service_v1.resend_email_code(user_id, get_session)
 
-    code_db.stop()
-    code.stop()
+    code_db_patch.stop()
+    code_patch.stop()
 
     get_user_by_id.assert_awaited_once()
-    code_db.assert_awaited_once()
-    code.assert_called_once()
+    code_db_patch.assert_awaited_once()
+    code_patch.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -114,20 +115,20 @@ async def test_create_new_token(
     token_path: str = f"{base_path}.auth_service.update_tokens"
     auth_path: str = f"{base_path}.auth_service.add_tokens_to_db"
 
-    token_db = patch(token_path, new_callable=AsyncMock).start()
-    auth_token = patch(auth_path, new_callable=AsyncMock).start()
+    token_patch: AsyncMock = patch(token_path, new_callable=AsyncMock).start()
+    auth_token_patch: AsyncMock = patch(auth_path, new_callable=AsyncMock).start()
 
     token = await auth_service_v1.create_new_token(refresh_token, get_session)
 
-    token_db.stop()
-    auth_token.stop()
+    token_patch.stop()
+    auth_token_patch.stop()
 
     assert token
 
     get_user_by_email.assert_awaited_once()
     verify_token.assert_awaited_once()
-    token_db.assert_awaited_once()
-    auth_token.assert_awaited_once()
+    token_patch.assert_awaited_once()
+    auth_token_patch.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -137,24 +138,24 @@ async def test_verify_user(get_user_by_id: AsyncMock, get_session: AsyncClientSe
     code_path: str = f"{base_path}.auth_service.get_verification_code"
     user_path: str = f"{base_path}.user_service.update_user"
 
-    code = patch(code_path, new_callable=AsyncMock).start()
-    user = patch(user_path, new_callable=AsyncMock).start()
+    code_patch: AsyncMock = patch(code_path, new_callable=AsyncMock).start()
+    user_patch: AsyncMock = patch(user_path, new_callable=AsyncMock).start()
 
     user_id: PydanticObjectId = PydanticObjectId()
     email_code: str = f"sign_in+randcode82653+{user_id}"
 
-    code.return_value = "randcode82653"
+    code_patch.return_value = "rand82653"
 
     verified_user = await auth_service_v1.verify_user(email_code, get_session)
 
-    code.stop()
-    user.stop()
+    code_patch.stop()
+    user_patch.stop()
 
     assert verified_user
 
     get_user_by_id.assert_awaited_once()
-    code.assert_awaited_once()
-    user.assert_awaited_once()
+    code_patch.assert_awaited_once()
+    user_patch.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -171,6 +172,19 @@ async def test_sign_out(
 
     verify_token.assert_awaited_once()
     token_db.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_sign_out_unauthenticated(
+    get_session: AsyncClientSession,
+):
+    refresh_token: str = "fake-refresh-token"
+    curr_user: UserV1 = fake_user
+
+    with pytest.raises(AuthenticationError) as exc:
+        await auth_service_v1.sign_out(curr_user, refresh_token, get_session)
+
+    assert "User not authenticated" == str(exc.value)
 
 
 @pytest.mark.asyncio
@@ -223,7 +237,7 @@ async def test_reset_password(
 
         assert user
         get_user_by_email.assert_awaited_once()
-        code.assert_awaited_once()
+        code.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -235,16 +249,16 @@ async def test_delete_user(verify_token: AsyncMock, get_session: AsyncClientSess
     token_path: str = f"{base_path}.auth_service.update_tokens"
     path: str = f"{base_path}.user_service.delete_user"
 
-    token_db = patch(token_path, new_callable=AsyncMock).start()
-    user = patch(path, new_callable=AsyncMock).start()
+    token_patch: AsyncMock = patch(token_path, new_callable=AsyncMock).start()
+    user_patch: AsyncMock = patch(path, new_callable=AsyncMock).start()
 
     await auth_service_v1.delete_user(
         curr_user, refresh_token, user_password, get_session
     )
 
-    token_db.stop()
-    user.stop()
+    token_patch.stop()
+    user_patch.stop()
 
-    user.assert_awaited_once()
+    user_patch.assert_awaited_once()
     verify_token.assert_awaited_once()
-    token_db.assert_awaited_once()
+    token_patch.assert_awaited_once()

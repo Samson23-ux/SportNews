@@ -12,14 +12,14 @@ from app.api.v1.schemas.users import AccountV1
 
 
 class TokenStatus(str, Enum):
-    USED: str = "used"
-    VALID: str = "valid"
-    REVOKED: str = "revoked"
+    USED = "used"
+    VALID = "valid"
+    REVOKED = "revoked"
 
 
 class CodeStatus(str, Enum):
-    USED: str = "used"
-    VALID: str = "valid"
+    USED = "used"
+    VALID = "valid"
 
 
 class TokenDataV1(BaseModel):

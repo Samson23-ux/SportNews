@@ -13,15 +13,15 @@ from app.api.v1.schemas.sports import TeamV1, SportV1, SportEnumv1
 
 
 class ArticleCategoryV1(str, Enum):
-    NEWS: str = "news"
-    TRANSFERS: str = "transfers"
+    NEWS = "news"
+    TRANSFERS = "transfers"
 
 
 class ArticleStatusV1(str, Enum):
-    PENDING: str = "pending"
-    REVIEWING: str = "reviewing"
-    EDITED: str = "edited"
-    PUBLISHED: str = "published"
+    PENDING = "pending"
+    REVIEWING = "reviewing"
+    EDITED = "edited"
+    PUBLISHED = "published"
 
 
 class ArticleStatV1(BaseModel):
@@ -34,7 +34,7 @@ class ArticleStatV1(BaseModel):
 class ArticleImageV1(BaseModel):
     img_name: str
     img_type: str
-    img_size: str
+    img_size: int
 
 
 class ArticleV1(Document):
@@ -269,6 +269,7 @@ class ArticleOutV1(BaseModel):
     author: str
     editor: Optional[str] = None
     athletes: Optional[list[str]] = None
+    teams: Optional[list[TeamV1]] = None
     avg_rating: Decimal
     category: ArticleCategoryV1
     created_at: datetime
@@ -283,6 +284,7 @@ class ArticleDraftOutV1(BaseModel):
     author: Optional[str] = None
     editor: Optional[str] = None
     athletes: Optional[list[str]] = None
+    teams: Optional[list[TeamV1]] = None
     category: Optional[ArticleCategoryV1] = None
     created_at: datetime
 

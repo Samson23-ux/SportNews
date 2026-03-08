@@ -6,18 +6,18 @@ from pydantic import BaseModel
 
 
 class CompetitionTypeV1(str, Enum):
-    LEAGUE: str = "league"
-    EUROPE: str = "europe"
-    TOURNAMENT: str = "tournament"
-    CHAMPIONSHIP: str = "championship"
+    LEAGUE = "league"
+    EUROPE = "europe"
+    TOURNAMENT = "tournament"
+    CHAMPIONSHIP = "championship"
 
 
 class SportEnumv1(str, Enum):
-    FOOTBALL: str = "football"
-    BASKETBALL: str = "basketball"
-    TENNIS: str = "tennis"
-    GOLF: str = "golf"
-    BOXING: str = "boxing"
+    FOOTBALL = "football"
+    BASKETBALL = "basketball"
+    TENNIS = "tennis"
+    GOLF = "golf"
+    BOXING = "boxing"
 
 
 class SportV1(Document):

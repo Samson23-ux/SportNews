@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 from beanie import Document, Link, PydanticObjectId
 
 
-from app.api.v1.schemas.users import EditorV1, AdminV1
 from app.api.v1.schemas.articles import ArticleV1
+from app.api.v1.schemas.users import EditorV1, AdminV1
 
 
 class TaskV1(Document):
