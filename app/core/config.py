@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     MONGO_DB_URI: str
     DB_NAME: str
 
+    # Test DB
+    TEST_DB_NAME: str
+
     # Sentry
     SENTRY_SDK_DSN: str
 

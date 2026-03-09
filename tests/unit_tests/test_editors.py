@@ -107,32 +107,25 @@ async def test_get_editor_profile_settings(
 
 @pytest.mark.asyncio
 async def test_mark_article_edited(
-    verify_token: AsyncMock, get_session: AsyncClientSession
+    verify_token: AsyncMock, get_article_by_id: AsyncMock, get_session: AsyncClientSession
 ):
     editor: EditorV1 = fake_editor
     refresh_token: str = "fake-refresh-token"
+
+    get_article_by_id.return_value = fake_article
     article_id: PydanticObjectId = PydanticObjectId()
 
-    article_path: str = f"{base_path}.article_service.get_article_by_id"
     update_path: str = f"{base_path}.article_service.update_article_in_db"
-
-    article_db_patch: AsyncMock = patch(article_path, new_callable=AsyncMock).start()
-    article_update_patch: AsyncMock = patch(update_path, new_callable=AsyncMock).start()
-
-    article_db_patch.return_value = fake_article
-
-    article = await editor_service_v1.mark_article_edited(
-        editor, refresh_token, article_id, get_session
-    )
-
-    article_db_patch.stop()
-    article_update_patch.stop()
+    with patch(update_path, new_callable=AsyncMock) as article:
+        article = await editor_service_v1.mark_article_edited(
+            editor, refresh_token, article_id, get_session
+        )
 
     assert article
 
     verify_token.assert_awaited_once()
-    article_db_patch.assert_awaited_once()
-    article_update_patch.assert_awaited_once()
+    get_article_by_id.assert_awaited_once()
+    article.assert_awaited_once()
 
 
 @pytest.mark.asyncio

@@ -57,7 +57,7 @@ async def get_admin_profile_settings(
     "/admin/me/analytics/dashboard",
     status_code=200,
     response_model=DashboardResponseV1,
-    description="Get current admin dashboard analytics"
+    description="Get current admin dashboard analytics",
 )
 async def get_admin_dashboard(
     request: Request,
@@ -71,20 +71,16 @@ async def get_admin_dashboard(
     "/admin/users",
     status_code=200,
     response_model=UserResponseV1,
-    description="Get all users"
+    description="Get all users",
 )
 async def get_all_users(
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit users to view at once")
-    ],
-    sort: Annotated[str, Query(default=None, description="Sort users")],
-    order: Annotated[
-        str, Query(default=None, description="Sort users in asc or desc order")
-    ],
     curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.ADMIN]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
+    sort: Annotated[str, Query(description="Sort users by created_at")] = None,
+    order: Annotated[str, Query(description="Sort users in asc or desc order")] = None,
 ):
     pass
 
@@ -93,20 +89,16 @@ async def get_all_users(
     "/admin/authors",
     status_code=200,
     response_model=WriterResponseV1,
-    description="Get all authors"
+    description="Get all authors",
 )
 async def get_all_authors(
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit authors to view at once")
-    ],
-    sort: Annotated[str, Query(default=None, description="Sort authors")],
-    order: Annotated[
-        str, Query(default=None, description="Sort authors in asc or desc order")
-    ],
     curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.ADMIN]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
+    sort: Annotated[str, Query(description="Sort users by created_at")] = None,
+    order: Annotated[str, Query(description="Sort users in asc or desc order")] = None,
 ):
     pass
 
@@ -115,20 +107,16 @@ async def get_all_authors(
     "/admin/editors",
     status_code=200,
     response_model=WriterResponseV1,
-    description="Get all editors"
+    description="Get all editors",
 )
 async def get_all_editors(
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit editors to view at once")
-    ],
-    sort: Annotated[str, Query(default=None, description="Sort editors")],
-    order: Annotated[
-        str, Query(default=None, description="Sort editors in asc or desc order")
-    ],
     curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.ADMIN]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
+    sort: Annotated[str, Query(description="Sort users by created_at")] = None,
+    order: Annotated[str, Query(description="Sort users in asc or desc order")] = None,
 ):
     pass
 
@@ -137,22 +125,20 @@ async def get_all_editors(
     "/admin/articles",
     status_code=200,
     response_model=ArticleResponseV1,
-    description="Get all articles"
+    description="Get all articles",
 )
 async def get_all_articles(
     request: Request,
-    sport: Annotated[str, Query(default=None, description="Filter articles by sport")],
-    status: Annotated[ArticleStatusV1, Query(default=None, description="Filter by article status")],
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit articles to view at once")
-    ],
-    sort: Annotated[str, Query(default=None, description="Sort articles")],
-    order: Annotated[
-        str, Query(default=None, description="Sort articles in asc or desc order")
-    ],
     curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.ADMIN]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    sport: Annotated[str, Query(description="Filter articles by sport")] = None,
+    status: Annotated[
+        ArticleStatusV1, Query(description="Filter by article status")
+    ] = None,
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
+    sort: Annotated[str, Query(description="Sort users by created_at")] = None,
+    order: Annotated[str, Query(description="Sort users in asc or desc order")] = None,
 ):
     pass
 
@@ -161,14 +147,18 @@ async def get_all_articles(
     "/admin/articles/readers",
     status_code=200,
     response_model=ArticleResponseV1,
-    description="Get all articles readers"
+    description="Get all articles readers",
 )
 async def get_article_readers(
     request: Request,
-    start_date: Annotated[datetime, Query(default=None, description="Set start date to view readers from")],
-    end_date: Annotated[datetime, Query(default=None, description="Set end date to view readers to")],
     curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.ADMIN]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    start_date: Annotated[
+        datetime, Query(description="Set start date to view readers from")
+    ] = None,
+    end_date: Annotated[
+        datetime, Query(description="Set end date to view readers to")
+    ] = None,
 ):
     pass
 
@@ -177,16 +167,14 @@ async def get_article_readers(
     "/admin/sports",
     status_code=200,
     response_model=SportResponseV1,
-    description="Get all sport categories"
+    description="Get all sport categories",
 )
 async def get_all_sports(
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit sports to view at once")
-    ],
     curr_user: Annotated[AccountV1, Depends(required_roles([UserRoleV1.ADMIN]))],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
 ):
     pass
 
@@ -195,7 +183,7 @@ async def get_all_sports(
     "/admin/editors/{editor_id}/articles/{article_id}/assign",
     status_code=201,
     response_model=ArticleResponseV1,
-    description="Assign article to editor for edit"
+    description="Assign article to editor for edit",
 )
 async def assign_article(
     editor_id: PydanticObjectId,
@@ -268,7 +256,7 @@ async def send_newsletter(
     "/admin/articles/{article_id}/publish",
     status_code=200,
     response_model=ArticleResponseV1,
-    description="Publish article after it has been edited by an editor"
+    description="Publish article after it has been edited by an editor",
 )
 async def publish_article(
     article_id: PydanticObjectId,

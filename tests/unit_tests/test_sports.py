@@ -58,6 +58,8 @@ async def test_sport_teams_not_found(
     path: str = f"{base_path}.sport_service.get_sport_teams"
     teams_patch: AsyncMock = patch(path, new_callable=AsyncMock).start()
 
+    teams_patch.return_value = None
+
     with pytest.raises(TeamsNotFoundError) as exc:
         await sport_service_v1.get_sport_teams(
             sport_name, curr_user, refresh_token, get_session

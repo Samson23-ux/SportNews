@@ -1,7 +1,12 @@
 import pytest
+from unittest.mock import AsyncMock
 from httpx import Response, AsyncClient
 
-
+from tests.integration_tests.database import (
+    async_client,
+    initialize_db,
+    get_test_session,
+)
 from tests.fake_data import (
     fake_user,
     fake_admin,
@@ -327,7 +332,11 @@ async def test_create_editor(create_editor: Response):
 
 
 @pytest.mark.asyncio
-async def test_send_information(create_user: Response, async_client: AsyncClient):
+async def test_send_information(
+    create_user: Response,
+    send_information_to_users: AsyncMock,
+    async_client: AsyncClient,
+):
     admin_email: str = fake_admin.email
     admin_password: str = fake_admin.password
 
@@ -370,7 +379,11 @@ async def test_send_information(create_user: Response, async_client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_send_newsletter(create_user: Response, async_client: AsyncClient):
+async def test_send_newsletter(
+    create_user: Response,
+    send_newsletter_to_users: AsyncMock,
+    async_client: AsyncClient,
+):
     admin_email: str = fake_admin.email
     admin_password: str = fake_admin.password
 
@@ -457,13 +470,19 @@ async def test_publish_article(
     # mark article edited
     await async_client.patch(
         f"/editors/articles/{article_id}/edited",
-        headers={"Authorization": f"Bearer {editor_access_token}", "curr_env": "testing"},
+        headers={
+            "Authorization": f"Bearer {editor_access_token}",
+            "curr_env": "testing",
+        },
     )
 
     # publish article
     res = await async_client.patch(
         f"/admin/articles/{article_id}/publish",
-        headers={"Authorization": f"Bearer {admin_access_token}", "curr_env": "testing"},
+        headers={
+            "Authorization": f"Bearer {admin_access_token}",
+            "curr_env": "testing",
+        },
     )
 
     json_res = res.json()

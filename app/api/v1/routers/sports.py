@@ -38,12 +38,10 @@ async def get_all_sports(
 async def get_sports_teams(
     sport_name: str,
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit teams to view at once")
-    ],
     curr_user: Annotated[AccountV1, Depends(get_current_user)],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit teams to view at once")] = 20,
 ):
     pass
 
@@ -57,11 +55,11 @@ async def get_sports_teams(
 async def get_sport_competitions(
     sport_name: str,
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit competitions to view at once")
-    ],
     curr_user: Annotated[AccountV1, Depends(get_current_user)],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[
+        int, Query(description="Limit competitions to view at once")
+    ] = 20,
 ):
     pass

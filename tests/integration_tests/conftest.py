@@ -1,20 +1,21 @@
 import pytest_asyncio
 from typing import Any
-from beanie import Document
-from pymongo import AsyncMongoClient
+from beanie import PydanticObjectId
+from httpx import AsyncClient, Response
+from unittest.mock import AsyncMock, patch
 from collections.abc import AsyncGenerator
-from beanie import init_beanie, PydanticObjectId
-from httpx import AsyncClient, ASGITransport, Response
-from pymongo.asynchronous.client_session import AsyncClientSession
 
 
-from app.main import app
-from app.core.config import settings
-from app.dependencies import get_session
-from app.api.v1.schemas.tasks import TaskV1
+from app.api.v1.schemas.articles import ArticleCreateV1
 from app.scripts.seeds.create_sports import SportCategory
-from app.api.v1.schemas.auth import RefreshTokenV1, EmailCodeV1
+from tests.integration_tests.database import async_client
 from app.scripts.seeds.create_admin import create_admin_user as create_admin
+from app.api.v1.schemas.users import (
+    UserCreateV1,
+    AdminCreateV1,
+    AuthorCreateV1,
+    EditorCreateV1,
+)
 from tests.fake_data import (
     fake_user,
     fake_admin,
@@ -29,106 +30,6 @@ from tests.fake_data import (
     football_competitions,
     basketball_competitions,
 )
-from app.api.v1.schemas.users import (
-    UserV1,
-    AccountV1,
-    AdminV1,
-    AuthorV1,
-    EditorV1,
-    EmployeeV1,
-    UserCreateV1,
-    AdminCreateV1,
-    AuthorCreateV1,
-    EditorCreateV1,
-)
-from app.api.v1.schemas.articles import (
-    ArticleV1,
-    TeamSportV1,
-    SubscriptionV1,
-    ArticleCreateV1,
-    IndividualSportV1,
-)
-from app.api.v1.schemas.sports import (
-    GolfV1,
-    SportV1,
-    BoxingV1,
-    TennisV1,
-    FootballV1,
-    BasketballV1,
-)
-
-
-@pytest_asyncio.fixture(scope="session")
-async def initialize_db():
-    client = AsyncMongoClient(
-        settings.MONGO_DB_URI,
-        tz_aware=True,
-        maxConnecting=5,
-        appname=settings.API_TITLE,
-        tls=settings.ENVIRONMENT == "production",
-    )
-
-    db_name: str = settings.DB_NAME
-    db = client[db_name]
-
-    models: list[Document] = [
-        UserV1,
-        GolfV1,
-        TaskV1,
-        SportV1,
-        AdminV1,
-        AuthorV1,
-        EditorV1,
-        BoxingV1,
-        TennisV1,
-        AccountV1,
-        ArticleV1,
-        EmployeeV1,
-        FootballV1,
-        TeamSportV1,
-        EmailCodeV1,
-        BasketballV1,
-        RefreshTokenV1,
-        SubscriptionV1,
-        IndividualSportV1,
-    ]
-
-    await init_beanie(db, document_models=models, allow_index_dropping=True)
-
-    yield client
-
-    for model in models:
-        await model.get_pymongo_collection().drop()
-
-    await client.close()
-
-
-@pytest_asyncio.fixture
-async def get_test_session(
-    initialize_db: AsyncMongoClient,
-) -> AsyncGenerator[AsyncClientSession, Any, None]:
-    session: AsyncClientSession = initialize_db.start_session(causal_consistency=True)
-    await session.start_transaction()
-
-    yield session
-
-    await session.abort_transaction()
-    await session.end_session()
-
-
-@pytest_asyncio.fixture
-async def async_client(
-    get_test_session: AsyncClientSession,
-) -> AsyncGenerator[AsyncClientSession, Any, None]:
-    async def get_db_session():
-        yield get_test_session
-
-    app.dependency_overrides[get_session] = get_db_session
-
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://localhost"
-    ) as client:
-        yield client
 
 
 @pytest_asyncio.fixture
@@ -163,9 +64,51 @@ async def create_sports():
     await basketball_category.add_basketball(basketball_teams, basketball_competitions)
 
 
+base_path: str = "app.api.v1.services"
+
+
+@pytest_asyncio.fixture
+async def send_email_code() -> AsyncGenerator[AsyncMock, Any, None]:
+    path: str = f"{base_path}.auth_service.send_email_code"
+    with patch(path, new_callable=AsyncMock) as email:
+        yield email
+
+    email.assert_awaited_once()
+
+
+@pytest_asyncio.fixture
+async def send_email_to_subscribers() -> AsyncGenerator[AsyncMock, Any, None]:
+    path: str = f"{base_path}.article_service.send_email_to_subscribers"
+    with patch(path, new_callable=AsyncMock) as email:
+        yield email
+
+    email.assert_awaited_once()
+
+
+@pytest_asyncio.fixture
+async def send_information_to_users() -> AsyncGenerator[AsyncMock, Any, None]:
+    path: str = f"{base_path}.admin_service.send_information_to_users"
+    with patch(path, new_callable=AsyncMock) as email:
+        yield email
+
+    email.assert_awaited_once()
+
+
+@pytest_asyncio.fixture
+async def send_newsletter_to_users() -> AsyncGenerator[AsyncMock, Any, None]:
+    path: str = f"{base_path}.admin_service.send_newsletter_to_users"
+    with patch(path, new_callable=AsyncMock) as email:
+        yield email
+
+    email.assert_awaited_once()
+
+
 @pytest_asyncio.fixture
 async def create_user(
-    create_admin_user, create_sports, async_client: AsyncClient
+    create_sports,
+    create_admin_user,
+    send_email_code: AsyncMock,
+    async_client: AsyncClient,
 ) -> Response:
     user_email: str = fake_user.email
     user_password: str = fake_user.password
@@ -183,7 +126,13 @@ async def create_user(
 
 
 @pytest_asyncio.fixture
-async def create_author(create_admin_user, async_client: AsyncClient) -> Response:
+async def create_author(
+    create_sports,
+    create_admin_user,
+    send_email_code: AsyncMock,
+    async_client: AsyncClient,
+) -> Response:
+    # author is initially created as a user
     admin_email: str = fake_admin.email
     admin_password: str = fake_admin.password
 
@@ -210,6 +159,7 @@ async def create_author(create_admin_user, async_client: AsyncClient) -> Respons
         name=author_name, nationality=author_nationality, user_id=author_id
     )
 
+    # admin assigns author role to the created user
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
         data={"username": admin_email, "password": admin_password},
@@ -228,7 +178,13 @@ async def create_author(create_admin_user, async_client: AsyncClient) -> Respons
 
 
 @pytest_asyncio.fixture
-async def create_editor(create_admin_user, async_client: AsyncClient) -> Response:
+async def create_editor(
+    create_sports,
+    create_admin_user,
+    send_email_code: AsyncMock,
+    async_client: AsyncClient,
+) -> Response:
+    # editor is initially created as a user
     admin_email: str = fake_admin.email
     admin_password: str = fake_admin.password
 
@@ -255,6 +211,7 @@ async def create_editor(create_admin_user, async_client: AsyncClient) -> Respons
         name=editor_name, nationality=editor_nationality, user_id=editor_id
     )
 
+    # admin assigns editor role to the created user
     sign_in_res: Response = await async_client.post(
         "/api/v1/auth/sign-in",
         data={"username": admin_email, "password": admin_password},
@@ -273,7 +230,9 @@ async def create_editor(create_admin_user, async_client: AsyncClient) -> Respons
 
 
 @pytest_asyncio.fixture
-async def create_article(create_author, async_client: AsyncClient) -> Response:
+async def create_article(
+    create_author, send_email_to_subscribers: AsyncMock, async_client: AsyncClient
+) -> Response:
     author_email: str = fake_author.email
     author_password: str = fake_author.password
 

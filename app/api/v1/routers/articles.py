@@ -29,17 +29,13 @@ articles_router_v1 = APIRouter()
 )
 async def get_articles(
     request: Request,
-    sport: Annotated[str, Query(default=None, description="Filter articles by sport")],
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit articles to view at once")
-    ],
-    sort: Annotated[str, Query(default=None, description="Sort articles")],
-    order: Annotated[
-        str, Query(default=None, description="Sort articles in asc or desc order")
-    ],
     curr_user: Annotated[AccountV1, Depends(get_current_user)],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    sport: Annotated[str, Query(description="Filter articles by sport")] = None,
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
+    sort: Annotated[str, Query(description="Sort users by created_at")] = None,
+    order: Annotated[str, Query(description="Sort users in asc or desc order")] = None,
 ):
     pass
 
@@ -52,18 +48,14 @@ async def get_articles(
 )
 async def get_drafts(
     request: Request,
-    cursor: Annotated[str, Query(default=None, description="")],
-    offset: Annotated[
-        int, Query(default=20, description="Limit drafts to view at once")
-    ],
-    sort: Annotated[str, Query(default=None, description="Sort drafts")],
-    order: Annotated[
-        str, Query(default=None, description="Sort drafts in asc or desc order")
-    ],
     curr_user: Annotated[
         AccountV1, Depends(required_roles([UserRoleV1.EDITOR, UserRoleV1.AUTHOR]))
     ],
     session: Annotated[AsyncClientSession, Depends(get_session)],
+    cursor: Annotated[str, Query(description="")] = None,
+    offset: Annotated[int, Query(description="Limit users to view at once")] = 20,
+    sort: Annotated[str, Query(description="Sort users by created_at")] = None,
+    order: Annotated[str, Query(description="Sort users in asc or desc order")] = None,
 ):
     pass
 

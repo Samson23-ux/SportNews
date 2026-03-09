@@ -10,7 +10,7 @@ from app.api.v1.schemas.sports import (
 
 
 class SportCategory:
-    async def __init__(self, name: str):
+    def __init__(self, name: str):
         self.name = name
 
     async def add_football(

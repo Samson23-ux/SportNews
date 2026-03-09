@@ -3,6 +3,11 @@ from httpx import Response, AsyncClient
 
 
 from tests.fake_data import fake_author, fake_user
+from tests.integration_tests.database import (
+    async_client,
+    initialize_db,
+    get_test_session,
+)
 
 
 @pytest.mark.asyncio

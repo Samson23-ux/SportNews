@@ -4,6 +4,12 @@ from pathlib import Path
 from httpx import Response, AsyncClient
 
 
+from app.api.v1.schemas.articles import ImageOutV1
+from tests.integration_tests.database import (
+    async_client,
+    initialize_db,
+    get_test_session,
+)
 from tests.fake_data import (
     fake_user,
     fake_admin,
@@ -11,7 +17,6 @@ from tests.fake_data import (
     fake_author,
     fake_article,
 )
-from app.api.v1.schemas.articles import ImageOutV1
 
 
 @pytest.mark.asyncio

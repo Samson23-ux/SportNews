@@ -7,37 +7,42 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 
 
 from app.core.config import settings
-from tests.fake_data import fake_user
-from app.api.v1.schemas.users import UserCreateV1
-from app.api.v1.services.auth_service import auth_service_v1
+# from tests.fake_data import fake_user
+# from app.api.v1.schemas.users import UserCreateV1
+# from app.api.v1.services.auth_service import auth_service_v1
 
 
 base_path: str = "app.api.v1.services"
 
 
 @pytest_asyncio.fixture
-async def get_session() -> AsyncGenerator[AsyncClientSession, Any, None]:
-    db_client: AsyncMongoClient = AsyncMongoClient(host=settings.MONGO_DB_URI)
-
-    with db_client.start_session() as session:
+async def get_session() -> AsyncGenerator[AsyncMock, Any, None]:
+    # mock mongo session
+    path: str = "app.dependencies.get_session"
+    with patch(path, new_callable=AsyncMock) as session:
         yield session
-
-    await db_client.close()
 
 
 # mock repo functions to prevent actual interactions with the db
 @pytest_asyncio.fixture
 async def get_user_by_email() -> AsyncGenerator[AsyncMock, Any, None]:
     path: str = f"{base_path}.user_service.get_user_by_email"
-    with patch(path, new_callable=AsyncMock) as get_user:
-        yield get_user
+    with patch(path, new_callable=AsyncMock) as user:
+        yield user
 
 
 @pytest_asyncio.fixture
 async def get_user_by_id() -> AsyncGenerator[AsyncMock, Any, None]:
     path: str = f"{base_path}.user_service.get_user_by_id"
-    with patch(path, new_callable=AsyncMock) as get_user:
-        yield get_user
+    with patch(path, new_callable=AsyncMock) as user:
+        yield user
+
+
+@pytest_asyncio.fixture
+async def get_article_by_id() -> AsyncGenerator[AsyncMock, Any, None]:
+    path: str = f"{base_path}.article_service.get_article_by_id"
+    with patch(path, new_callable=AsyncMock) as article:
+        yield article
 
     
 @pytest_asyncio.fixture

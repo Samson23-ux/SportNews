@@ -5,7 +5,8 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 
 
 from tests.unit_tests.conftest import base_path
-from tests.fake_data import fake_user, FakeToken
+from tests.fake_data import fake_user, fake_token
+from app.api.v1.schemas.auth import RefreshTokenV1
 from app.core.exceptions import AuthenticationError
 from app.api.v1.schemas.users import UserCreateV1, UserV1
 from app.api.v1.services.auth_service import auth_service_v1
@@ -21,8 +22,7 @@ async def test_get_tokens():
 
 @pytest.mark.asyncio
 async def test_ivalidate_token(get_session: AsyncClientSession):
-    token: FakeToken = FakeToken()
-    refresh_token = token.get_status
+    refresh_token: RefreshTokenV1 = fake_token
 
     path: str = f"{base_path}.auth_service.update_tokens"
     with patch(path, new_callable=AsyncMock) as token:
@@ -109,25 +109,31 @@ async def test_create_new_token(
     verify_token: AsyncMock,
     get_session: AsyncClientSession,
 ):
+    refresh_token: str = "fake-refresh-token"
     get_user_by_email.return_value = fake_user
 
-    refresh_token: str = "fake-refresh-token"
-    token_path: str = f"{base_path}.auth_service.update_tokens"
     auth_path: str = f"{base_path}.auth_service.add_tokens_to_db"
+    token_update_path: str = f"{base_path}.auth_service.update_tokens"
+    token_path: str = f"{base_path}.auth_service.invalidate_token"
 
     token_patch: AsyncMock = patch(token_path, new_callable=AsyncMock).start()
+    token_update_patch: AsyncMock = patch(
+        token_update_path, new_callable=AsyncMock
+    ).start()
     auth_token_patch: AsyncMock = patch(auth_path, new_callable=AsyncMock).start()
 
     token = await auth_service_v1.create_new_token(refresh_token, get_session)
 
-    token_patch.stop()
+    token_update_patch.stop()
     auth_token_patch.stop()
+    token_patch.stop()
 
     assert token
 
     get_user_by_email.assert_awaited_once()
     verify_token.assert_awaited_once()
     token_patch.assert_awaited_once()
+    token_update_patch.assert_awaited_once()
     auth_token_patch.assert_awaited_once()
 
 
@@ -203,7 +209,7 @@ async def test_update_password(
 
     path: str = f"{base_path}.user_service.update_user"
     with patch(path, new_callable=AsyncMock) as user:
-        user = await auth_service_v1.update_user(
+        user = await auth_service_v1.update_password(
             curr_user, refresh_token, curr_password, new_password, get_session
         )
 
@@ -230,14 +236,21 @@ async def test_reset_password(
     #     user.assert_awaited_once()
 
     email_path: str = f"{base_path}.auth_service.send_email_code"
-    with patch(email_path, new_callable=AsyncMock) as code:
-        user = await auth_service_v1.reset_password(
-            user_email, user_password, get_session
-        )
+    token_path: str = f"{base_path}.auth_service.invalidate_token"
 
-        assert user
-        get_user_by_email.assert_awaited_once()
-        code.assert_called_once()
+    email_patch: AsyncMock = patch(email_path, new_callable=AsyncMock).start()
+    token_patch: AsyncMock = patch(token_path, new_callable=AsyncMock).start()
+
+    user = await auth_service_v1.reset_password(user_email, user_password, get_session)
+
+    email_patch.stop()
+    token_patch.stop()
+
+    assert user
+
+    get_user_by_email.assert_awaited_once()
+    email_patch.assert_called_once()
+    token_patch.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -246,19 +259,25 @@ async def test_delete_user(verify_token: AsyncMock, get_session: AsyncClientSess
     refresh_token: str = "fake-refresh-token"
     curr_user: UserV1 = fake_user
 
-    token_path: str = f"{base_path}.auth_service.update_tokens"
-    path: str = f"{base_path}.user_service.delete_user"
+    user_path: str = f"{base_path}.user_service.delete_user"
+    token_path: str = f"{base_path}.auth_service.invalidate_token"
+    token_update_path: str = f"{base_path}.auth_service.update_tokens"
 
+    token_update_patch: AsyncMock = patch(
+        token_update_path, new_callable=AsyncMock
+    ).start()
     token_patch: AsyncMock = patch(token_path, new_callable=AsyncMock).start()
-    user_patch: AsyncMock = patch(path, new_callable=AsyncMock).start()
+    user_patch: AsyncMock = patch(user_path, new_callable=AsyncMock).start()
 
     await auth_service_v1.delete_user(
         curr_user, refresh_token, user_password, get_session
     )
 
-    token_patch.stop()
     user_patch.stop()
+    token_patch.stop()
+    token_update_patch.stop()
 
     user_patch.assert_awaited_once()
     verify_token.assert_awaited_once()
     token_patch.assert_awaited_once()
+    token_update_patch.assert_awaited_once()

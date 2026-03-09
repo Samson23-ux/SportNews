@@ -1,8 +1,14 @@
 import pytest
+from unittest.mock import AsyncMock
 from httpx import Response, AsyncClient
 
 
 from tests.fake_data import fake_user
+from tests.integration_tests.database import (
+    async_client,
+    initialize_db,
+    get_test_session,
+)
 
 
 @pytest.mark.asyncio
@@ -24,7 +30,7 @@ async def test_sign_up_with_bad_input(async_client: AsyncClient):
         headers={"curr_env": "testing"},
     )
 
-    assert res.status_code == 400
+    assert res.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -159,7 +165,7 @@ async def test_unauthenticated_user(async_client: AsyncClient, create_user: Resp
 
 
 @pytest.mark.asyncio
-async def test_reset_password(async_client: AsyncClient, create_user: Response):
+async def test_reset_password(async_client: AsyncClient, create_user: Response, send_email_code: AsyncMock):
     user_email: str = fake_user.email
     new_password: str = "fake_new_password"
 

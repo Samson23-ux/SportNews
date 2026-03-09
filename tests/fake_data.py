@@ -1,7 +1,9 @@
+from uuid import uuid4
 from decimal import Decimal
 from beanie import PydanticObjectId
 from app.api.v1.schemas.tasks import TaskV1
-from app.api.v1.schemas.auth import TokenStatus
+from datetime import datetime, timedelta, timezone
+from app.api.v1.schemas.auth import TokenStatus, RefreshTokenV1
 from app.api.v1.schemas.sports import TeamV1, CompetitionV1, FootballV1
 from app.api.v1.schemas.articles import (
     TeamSportV1,
@@ -20,17 +22,47 @@ from app.api.v1.schemas.users import (
     AuthorCreateV1,
     UserSettingsV1,
     WriterSettingsV1,
+    AdminDashboardV1,
+    WriterDashboardV1,
     EmployeeSettingsV1,
 )
 
 
-class FakeToken:
-    def __init__(self, status: TokenStatus = TokenStatus.VALID):
-        self.status = status
-
-    @property
-    def get_status(self):
-        return self.status
+# article data
+fake_article_content = """
+The Role of Sports in Personal Development and Society
+Sports have long played an important role in human culture, serving as a source of
+entertainment, competition, and personal development. Across the world, millions of people
+participate in sports either professionally or recreationally. From football and basketball
+to tennis and athletics, sports bring people together, promote healthy lifestyles, and help
+individuals develop valuable life skills.
+One of the most significant benefits of sports is the improvement of physical health. Regular
+participation in sports helps individuals maintain a healthy body by strengthening muscles,
+improving cardiovascular fitness, and increasing overall endurance. Activities such as running,
+swimming, and cycling not only help control weight but also reduce the risk of diseases such as
+obesity, heart disease, and diabetes. In addition, sports encourage people to remain active
+rather than adopting sedentary lifestyles.
+Beyond physical health, sports contribute greatly to mental well-being. Engaging in physical
+activity releases endorphins, which are chemicals in the brain that help reduce stress and
+improve mood. Many athletes report feeling more confident and focused as a result of their
+involvement in sports. For students and young people in particular, sports can provide a healthy
+outlet for stress and a way to maintain a balanced lifestyle alongside academic responsibilities.
+Sports also play a vital role in teaching important life skills. Team sports such as football,
+basketball, and volleyball require cooperation, communication, and trust among teammates.
+Players learn the value of teamwork and understand that success often depends on collective
+effort rather than individual performance. Additionally, sports teach discipline, time management,
+and perseverance. Athletes must train regularly, follow rules, and continue improving even after
+experiencing losses or setbacks.
+Another powerful aspect of sports is their ability to unite communities and nations. Major
+sporting events such as the Olympics and international tournaments bring people from different
+backgrounds together to celebrate competition and achievement. Fans support their teams with
+passion, creating a sense of identity and belonging. Sports can bridge cultural differences and
+foster mutual respect among individuals who might otherwise have little interaction.
+In conclusion, sports offer far more than just entertainment. They promote physical and mental
+health, teach valuable life lessons, and strengthen communities. Whether played professionally
+or simply for fun, sports remain an essential part of human society and continue to inspire
+people around the world to stay active, disciplined, and connected.
+"""
 
 
 # admin
@@ -88,6 +120,15 @@ fake_user: UserV1 = UserV1(
 )
 
 
+# auth token
+fake_token: RefreshTokenV1 = RefreshTokenV1(
+    token_id=uuid4(),
+    token="fake-auth-token",
+    user=fake_user,
+    expires_at=datetime.now(tz=timezone.utc) + timedelta(days=7),   
+)
+
+
 # sport teams and competitions
 football_team: TeamV1 = TeamV1(name="fake_football_name", country="fake_country")
 football_competition: CompetitionV1 = CompetitionV1(
@@ -124,17 +165,11 @@ football: FootballV1 = FootballV1(
     name="football", teams=football_teams, competitions=football_competitions
 )
 
-
-# article data
-fake_article_content = """"""
-
 article_img: ArticleImageV1 = ArticleImageV1(
-    img_name="fake_image_url",
-    img_type="jgp",
-    img_size=222
+    img_name="fake_image_url", img_type="jgp", img_size=222
 )
 
-article_title: str = "fake_title"
+article_title: str = "fake article title about football"
 article_content: str = fake_article_content
 article_sport: FootballV1 = football
 article_category: str = "news"
@@ -148,25 +183,20 @@ fake_article: TeamSportV1 = TeamSportV1(
     sport=article_sport,
     category=article_category,
     teams=article_teams,
-    images=[article_img]
+    images=[article_img],
 )
 
 
 # article with rating
-
-user_data: dict = {
-    "_id": PydanticObjectId("507f1f77bcf86cd799439011"),
-    "email": user_email,
-    "password": user_password,
-    "profile_settings": user_settings
-}
-
-fake_user_1: UserV1 = UserV1.model_validate(user_data, extra="allow")
+fake_user_1: UserV1 = UserV1(
+    id=PydanticObjectId("507f1f77bcf86cd799439011"),
+    email=user_email,
+    password=user_password,
+    profile_settings=user_settings
+)
 
 article_stat: ArticleStatV1 = ArticleStatV1(
-    user=fake_user_1,
-    rating=Decimal(6.6),
-    is_rated=True
+    user=fake_user_1, rating=Decimal("6.6"), is_rated=True
 )
 
 fake_article_with_rating: TeamSportV1 = TeamSportV1(
@@ -176,7 +206,7 @@ fake_article_with_rating: TeamSportV1 = TeamSportV1(
     sport=article_sport,
     category=article_category,
     teams=article_teams,
-    readers=[article_stat]
+    readers=[article_stat],
 )
 
 # article draft
@@ -187,27 +217,29 @@ fake_draft: ArticleDraftV1 = ArticleDraftV1(
 )
 
 # author and editor dashboard
-fake_dashboard: dict = {
-    "total_articles": 1,
-    "total_article_readers": 1,
-    "avg_article_readers": 1,
-    "total_drafted_articles": 0,
-    "avg_article_ratings": Decimal(8.0),
-}
+fake_dashboard: WriterDashboardV1 = WriterDashboardV1(
+    total_articles=1,
+    total_article_readers=1,
+    avg_article_readers=1,
+    total_drafted_articles=0,
+    total_published_articles=1,
+    avg_article_ratings=Decimal("8.0"),
+)
 
 # admin dashboard
-fake_dashboard_1: dict = {
-    "total_articles": 1,
-    "avg_article_readers": 1,
-    "total_users": 1,
-    "total_authors": 1,
-    "total_editors": 1,
-    "total_article_readers": {
+fake_dashboard_1: AdminDashboardV1 = AdminDashboardV1(
+    total_articles=1,
+    avg_article_readers=1,
+    total_users=1,
+    total_authors=1,
+    total_editors=1,
+    total_article_readers={
         "total_readers": 1,
         "readers_who_rate": 0,
-        "readers_who_dont_rate": 1
-    }
-}
+        "readers_who_dont_rate": 1,
+    },
+)
+
 
 # article create data
 fake_article_create: ArticleCreateV1 = ArticleCreateV1(
@@ -216,7 +248,7 @@ fake_article_create: ArticleCreateV1 = ArticleCreateV1(
     author="article_author",
     sport="football",
     category=article_category,
-    teams=["fake_football_name"]
+    teams=["fake_football_name"],
 )
 
 # draft create data
@@ -227,21 +259,15 @@ fake_draft_create: ArticleDraftCreateV1 = ArticleDraftCreateV1(
 
 # task data
 fake_task: TaskV1 = TaskV1(
-    assigned_by=fake_admin,
-    assigned_to=fake_editor,
-    article=fake_article
+    assigned_by=fake_admin, assigned_to=fake_editor, article=fake_article
 )
 
 
 # author and editor create data
 fake_author_create: AuthorCreateV1 = AuthorCreateV1(
-    name=author_name,
-    nationality=author_nationality,
-    user_id=PydanticObjectId()
+    name=author_name, nationality=author_nationality, user_id=PydanticObjectId()
 )
 
 fake_editor_create: EditorCreateV1 = EditorCreateV1(
-    name=editor_name,
-    nationality=editor_nationality,
-    user_id=PydanticObjectId()
+    name=editor_name, nationality=editor_nationality, user_id=PydanticObjectId()
 )

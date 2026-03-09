@@ -96,10 +96,13 @@ async def test_get_user_by_id(
 @pytest.mark.asyncio
 async def test_user_not_found(
     verify_token: AsyncMock,
+    get_user_by_id: AsyncMock,
     get_session: AsyncClientSession,
 ):
     user_id: PydanticObjectId = PydanticObjectId()
     refresh_token: str = "fake-refresh-token"
+
+    get_user_by_id.return_value = None
 
     with pytest.raises(UserNotFoundError) as exc:
         await user_service_v1.get_user_by_id(user_id, get_session, refresh_token)
