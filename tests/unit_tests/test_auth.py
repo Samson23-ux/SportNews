@@ -5,10 +5,10 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 
 
 from tests.unit_tests.conftest import base_path
-from tests.fake_data import fake_user, fake_token
 from app.api.v1.schemas.auth import RefreshTokenV1
 from app.core.exceptions import AuthenticationError
 from app.api.v1.schemas.users import UserCreateV1, UserV1
+from tests.unit_tests.fake_data import fake_user, fake_token
 from app.api.v1.services.auth_service import auth_service_v1
 
 

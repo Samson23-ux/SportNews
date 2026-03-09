@@ -7,10 +7,10 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 
 from tests.unit_tests.conftest import base_path
 from app.api.v1.schemas.articles import ArticleStatusV1
-from app.api.v1.services.sport_service import admin_service_v1
+from app.api.v1.services.admin_service import admin_service_v1
 from app.api.v1.schemas.users import AdminV1, EmployeeSettingsUpdateV1
 from app.core.exceptions import AuthenticationError, AuthorNotFoundError
-from tests.fake_data import (
+from tests.unit_tests.fake_data import (
     football,
     fake_user,
     fake_task,

@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, patch
 from pymongo.asynchronous.client_session import AsyncClientSession
 
 
-from tests.fake_data import fake_user
 from tests.unit_tests.conftest import base_path
+from tests.unit_tests.fake_data import fake_user
 from app.api.v1.services.user_service import user_service_v1
 from app.core.exceptions import AuthenticationError, UserNotFoundError
 from app.api.v1.schemas.users import UserCreateV1, UserSettingsUpdateV1, UserV1

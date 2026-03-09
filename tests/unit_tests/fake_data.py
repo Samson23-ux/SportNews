@@ -1,11 +1,11 @@
 from uuid import uuid4
 from decimal import Decimal
 from beanie import PydanticObjectId
-from app.api.v1.schemas.tasks import TaskV1
+from tests.unit_tests.fake_models import TaskV1
 from datetime import datetime, timedelta, timezone
-from app.api.v1.schemas.auth import TokenStatus, RefreshTokenV1
-from app.api.v1.schemas.sports import TeamV1, CompetitionV1, FootballV1
-from app.api.v1.schemas.articles import (
+from tests.unit_tests.fake_models import RefreshTokenV1
+from tests.unit_tests.fake_models import TeamV1, CompetitionV1, FootballV1
+from tests.unit_tests.fake_models import (
     TeamSportV1,
     ArticleStatV1,
     ArticleDraftV1,
@@ -13,7 +13,7 @@ from app.api.v1.schemas.articles import (
     ArticleCreateV1,
     ArticleDraftCreateV1,
 )
-from app.api.v1.schemas.users import (
+from tests.unit_tests.fake_models import (
     UserV1,
     AdminV1,
     EditorV1,

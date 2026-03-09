@@ -10,7 +10,7 @@ from tests.integration_tests.database import (
     initialize_db,
     get_test_session,
 )
-from tests.fake_data import (
+from tests.integration_tests.fake_data import (
     fake_user,
     fake_admin,
     fake_editor,

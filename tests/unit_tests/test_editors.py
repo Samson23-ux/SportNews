@@ -6,9 +6,9 @@ from pymongo.asynchronous.client_session import AsyncClientSession
 
 from tests.unit_tests.conftest import base_path
 from app.api.v1.services.editor_service import editor_service_v1
-from tests.fake_data import fake_editor, fake_article, fake_dashboard
 from app.api.v1.schemas.users import WriterSettingsUpdateV1, EditorV1
 from app.core.exceptions import AuthenticationError, ArticlesNotFoundError
+from tests.unit_tests.fake_data import fake_editor, fake_article, fake_dashboard
 
 
 @pytest.mark.asyncio

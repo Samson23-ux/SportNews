@@ -7,7 +7,12 @@ from app.api.v1.schemas.users import UserV1
 from tests.unit_tests.conftest import base_path
 from app.core.exceptions import TeamsNotFoundError
 from app.api.v1.services.sport_service import sport_service_v1
-from tests.fake_data import fake_user, football, football_teams, football_competitions
+from tests.unit_tests.fake_data import (
+    fake_user,
+    football,
+    football_teams,
+    football_competitions,
+)
 
 
 @pytest.mark.asyncio
@@ -64,7 +69,7 @@ async def test_sport_teams_not_found(
         await sport_service_v1.get_sport_teams(
             sport_name, curr_user, refresh_token, get_session
         )
-    
+
     teams_patch.stop()
 
     "teams not found" == str(exc.value)

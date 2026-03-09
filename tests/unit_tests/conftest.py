@@ -1,12 +1,10 @@
 import pytest_asyncio
 from typing import Any
-from pymongo import AsyncMongoClient
 from collections.abc import AsyncGenerator
 from unittest.mock import patch, AsyncMock
-from pymongo.asynchronous.client_session import AsyncClientSession
 
 
-from app.core.config import settings
+# from app.core.config import settings
 # from tests.fake_data import fake_user
 # from app.api.v1.schemas.users import UserCreateV1
 # from app.api.v1.services.auth_service import auth_service_v1

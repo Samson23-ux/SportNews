@@ -16,7 +16,7 @@ from app.api.v1.schemas.users import (
     AuthorCreateV1,
     EditorCreateV1,
 )
-from tests.fake_data import (
+from tests.integration_tests.fake_data import (
     fake_user,
     fake_admin,
     fake_author,

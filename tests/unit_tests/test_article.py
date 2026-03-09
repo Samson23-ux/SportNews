@@ -13,7 +13,7 @@ from app.api.v1.services.article_service import article_service_v1
 from app.api.v1.schemas.users import UserV1, AuthorV1, EditorV1, AdminV1
 from app.core.exceptions import AuthenticationError, ArticlesNotFoundError
 from app.api.v1.schemas.articles import ArticleUpdateV1, ArticleDraftCreateV1
-from tests.fake_data import (
+from tests.unit_tests.fake_data import (
     football,
     fake_user,
     fake_draft,
