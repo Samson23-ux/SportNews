@@ -184,6 +184,7 @@ class GoogleUserV1(AccountV1):
 
 
 class UserWithPasswordV1(AccountV1):
+    sub: str
     password: str = Field(min_length=8)
 
 

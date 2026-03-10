@@ -23,6 +23,21 @@ class Settings(BaseSettings):
     # Test DB
     TEST_DB_NAME: str
 
+    # Argon2
+    ARGON2_PEPPER: str
+
+    # JWT
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_TIME: int = 15
+    REFRESH_TOKEN_EXPIRE_TIME: int = 7
+    ACCESS_TOKEN_SECRET_KEY: str
+    REFRESH_TOKEN_SECRET_KEY: str
+
+    # OAuth2
+    CLIENT_ID: str
+    CLIENT_SECRET: str
+    OAUTH2_ALGORITHM: str = "RS256"
+
     # Sentry
     SENTRY_SDK_DSN: str
 

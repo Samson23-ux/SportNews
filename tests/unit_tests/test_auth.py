@@ -21,7 +21,7 @@ async def test_get_tokens():
 
 
 @pytest.mark.asyncio
-async def test_ivalidate_token(get_session: AsyncClientSession):
+async def test_invalidate_token(get_session: AsyncClientSession):
     refresh_token: RefreshTokenV1 = fake_token
 
     path: str = f"{base_path}.auth_service.update_tokens"

@@ -25,3 +25,8 @@ class TeamsNotFoundError(AppException):
 class AuthenticationError(AppException):
     """user not authenticated"""
     pass
+
+
+class AuthorizationError(AppException):
+    """user not authorized"""
+    pass

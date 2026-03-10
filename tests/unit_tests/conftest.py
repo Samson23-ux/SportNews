@@ -47,7 +47,7 @@ async def get_article_by_id() -> AsyncGenerator[AsyncMock, Any, None]:
 async def verify_token() -> AsyncGenerator[AsyncMock, Any, None]:
     token_path: str = f"{base_path}.verify_refresh_token"
     with patch(token_path, new_callable=AsyncMock) as token:
-        token.return_value = True
+        token.return_value = "fake-refresh-token"
 
 
 # @pytest_asyncio.fixture

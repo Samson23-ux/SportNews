@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request, Form, Response
 from pymongo.asynchronous.client_session import AsyncClientSession
 
 
+from app.core.security import oauth
 from app.api.v1.schemas.auth import TokenV1
 from app.dependencies import get_session, get_current_user
 from app.api.v1.schemas.users import (
@@ -48,11 +49,36 @@ async def resend_email_code(
     "/auth/sign-in",
     status_code=201,
     response_model=TokenV1,
-    description="Sign in with email and password or Google account",
+    description="Sign in with email and password",
 )
 async def sign_in(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[AsyncClientSession, Depends(get_session)],
+):
+    pass
+
+
+@auth_router_v1.get(
+    "/auth/sign-in/google",
+    status_code=302,
+    response_model=TokenV1,
+    description="Sign in Google account",
+)
+async def sign_in_with_google(
+    request: Request,
+):
+    pass
+
+
+@auth_router_v1.post(
+    "/auth/callback",
+    status_code=201,
+    response_model=TokenV1,
+    description="Callback URL for Google OAuth2",
+)
+async def create_user(
+    response: Response,
     session: Annotated[AsyncClientSession, Depends(get_session)],
 ):
     pass
